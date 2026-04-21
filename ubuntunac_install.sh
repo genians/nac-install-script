@@ -655,73 +655,74 @@ function install::nacpkg()
 	util::update_apt
 
 	if [[ "x$NODATASTORE" != "x1" ]]; then
-	PERCONA_VERSION=${PERCONA_VERSION}.${CODENAME}
-	if [[ "x$BIN" == "x" ]]; then
-		LATEST_PERCONA_VERSION=$(LANG=C apt-cache policy percona-server-server | awk '/Candidate:/ { print $2 }')
-		if [[ "x$LATEST_PERCONA_VERSION" != "x" ]]; then
-			PERCONA_VERSION=$LATEST_PERCONA_VERSION
+		PERCONA_VERSION=${PERCONA_VERSION}.${CODENAME}
+		if [[ "x$BIN" == "x" ]]; then
+			LATEST_PERCONA_VERSION=$(LANG=C apt-cache policy percona-server-server | awk '/Candidate:/ { print $2 }')
+			if [[ "x$LATEST_PERCONA_VERSION" != "x" ]]; then
+				PERCONA_VERSION=$LATEST_PERCONA_VERSION
+			fi
 		fi
-	fi
 
-	echo "percona-server-server percona-server-server/root-pass password" | debconf-set-selections
-	echo "percona-server-server percona-server-server/re-root-pass password" | debconf-set-selections
-	echo "percona-server-server percona-server-server/default-auth-override select Use Strong Password Encryption (RECOMMENDED)" | debconf-set-selections
-	echo "percona-server-server percona-server-server/remove-data-dir boolean true" | debconf-set-selections
-	echo "percona-server-server percona-server-server/data-dir note Ok" | debconf-set-selections
+		echo "percona-server-server percona-server-server/root-pass password" | debconf-set-selections
+		echo "percona-server-server percona-server-server/re-root-pass password" | debconf-set-selections
+		echo "percona-server-server percona-server-server/default-auth-override select Use Strong Password Encryption (RECOMMENDED)" | debconf-set-selections
+		echo "percona-server-server percona-server-server/remove-data-dir boolean true" | debconf-set-selections
+		echo "percona-server-server percona-server-server/data-dir note Ok" | debconf-set-selections
 
-	PS_DOWNLOADURL="https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.18-9/binary/debian/bionic/x86_64"
-	if [[ "x$CODENAME" == "xbionic" ]]; then
-		util::info "Install... percona-server"
-		/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-common_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-common_8.0.18-9-1.bionic_amd64.deb
-		if [ $? -ne 0 ]; then util::error "Failed to download Percona Server common package."; exit -1; fi
-		dpkg -i ${TMP_DIR}/percona-server-common_8.0.18-9-1.bionic_amd64.deb
+		PS_DOWNLOADURL="https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.18-9/binary/debian/bionic/x86_64"
+		if [[ "x$CODENAME" == "xbionic" ]]; then
+			util::info "Install... percona-server"
+			/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-common_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-common_8.0.18-9-1.bionic_amd64.deb
+			if [ $? -ne 0 ]; then util::error "Failed to download Percona Server common package."; exit -1; fi
+			dpkg -i ${TMP_DIR}/percona-server-common_8.0.18-9-1.bionic_amd64.deb
 
-		/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb
-		if [ $? -ne 0 ]; then util::error "Failed to download Percona Server client library."; exit -1; fi
-		dpkg -i ${TMP_DIR}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb
+			/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb
+			if [ $? -ne 0 ]; then util::error "Failed to download Percona Server client library."; exit -1; fi
+			dpkg -i ${TMP_DIR}/libperconaserverclient21_8.0.18-9-1.bionic_amd64.deb
 
-		/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-client_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-client_8.0.18-9-1.bionic_amd64.deb
-		if [ $? -ne 0 ]; then util::error "Failed to download Percona Server client package."; exit -1; fi
-		dpkg -i ${TMP_DIR}/percona-server-client_8.0.18-9-1.bionic_amd64.deb
+			/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-client_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-client_8.0.18-9-1.bionic_amd64.deb
+			if [ $? -ne 0 ]; then util::error "Failed to download Percona Server client package."; exit -1; fi
+			dpkg -i ${TMP_DIR}/percona-server-client_8.0.18-9-1.bionic_amd64.deb
 
-		/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-server_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-server_8.0.18-9-1.bionic_amd64.deb
-		if [ $? -ne 0 ]; then util::error "Failed to download Percona Server server package."; exit -1; fi
-		dpkg -i ${TMP_DIR}/percona-server-server_8.0.18-9-1.bionic_amd64.deb
-	elif [[ "x$CODENAME" == "xfocal" || "x$CODENAME" == "xjammy" ]]; then
-		util::install_packages libgflags2.2
-		util::install_packages percona-server-common=${PERCONA_VERSION} libperconaserverclient21=${PERCONA_VERSION} \
-			percona-server-client=${PERCONA_VERSION} \
-			percona-server-server=${PERCONA_VERSION}
-	elif [[ "x$CODENAME" == "xnoble" ]]; then
-		if [[ "x$INSTALLISO" == "x" ]] && [[ "x$BIN" == "x" ]]; then
-			apt remove -y libperconaserverclient* percona-server* --allow-change-held-packages > /dev/null 2>&1
+			/usr/bin/curl -# -4 --connect-timeout $CONNECT_TIMEOUT --retry $MAX_RETRIES -SkL ${PS_DOWNLOADURL}/percona-server-server_8.0.18-9-1.bionic_amd64.deb -o ${TMP_DIR}/percona-server-server_8.0.18-9-1.bionic_amd64.deb
+			if [ $? -ne 0 ]; then util::error "Failed to download Percona Server server package."; exit -1; fi
+			dpkg -i ${TMP_DIR}/percona-server-server_8.0.18-9-1.bionic_amd64.deb
+		elif [[ "x$CODENAME" == "xfocal" || "x$CODENAME" == "xjammy" ]]; then
+			util::install_packages libgflags2.2
+			util::install_packages percona-server-common=${PERCONA_VERSION} libperconaserverclient21=${PERCONA_VERSION} \
+				percona-server-client=${PERCONA_VERSION} \
+				percona-server-server=${PERCONA_VERSION}
+		elif [[ "x$CODENAME" == "xnoble" ]]; then
+			if [[ "x$INSTALLISO" == "x" ]] && [[ "x$BIN" == "x" ]]; then
+				apt remove -y libperconaserverclient* percona-server* --allow-change-held-packages > /dev/null 2>&1
+			fi
+			ln -s libaio.so.1t64.0.2 /lib/x86_64-linux-gnu/libaio.so.1 > /dev/null 2>&1
+
+			util::install_packages percona-server-common=${PERCONA_VERSION} libperconaserverclient21=${PERCONA_VERSION} \
+				percona-server-client=${PERCONA_VERSION} \
+				percona-server-server=${PERCONA_VERSION}
 		fi
-		ln -s libaio.so.1t64.0.2 /lib/x86_64-linux-gnu/libaio.so.1 > /dev/null 2>&1
-
-		util::install_packages percona-server-common=${PERCONA_VERSION} libperconaserverclient21=${PERCONA_VERSION} \
-			percona-server-client=${PERCONA_VERSION} \
-			percona-server-server=${PERCONA_VERSION}
 
 		#if [[ "x$INSTALLISO" == "x" ]] && [[ "x$BIN" == "x" ]]; then
-			#apt remove -y libperconaserverclient21 --allow-change-held-packages > /dev/null 2>&1
+		#apt remove -y libperconaserverclient21 --allow-change-held-packages > /dev/null 2>&1
 		#fi
-	fi
 
-	if [[ "x$CODENAME" == "xfocal" || "x$CODENAME" == "xjammy" || "x$CODENAME" == "xnoble" ]]; then
-		util::disable_systemctl filebeat
-		util::mask_systemctl filebeat
-		if [[ "x$(apt list --installed 2>/dev/null | grep filebeat)" == "x" ]]; then
-			echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
-			if [[ "x$REPO_MIRROR" != "x" ]]; then
-				echo "deb http://$REPO_MIRROR/artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
+		if [[ "x$CODENAME" == "xfocal" || "x$CODENAME" == "xjammy" || "x$CODENAME" == "xnoble" ]]; then
+			util::disable_systemctl filebeat
+			util::mask_systemctl filebeat
+			if [[ "x$(apt list --installed 2>/dev/null | grep filebeat)" == "x" ]]; then
+				echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
+				if [[ "x$REPO_MIRROR" != "x" ]]; then
+					echo "deb http://$REPO_MIRROR/artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
+				fi
+				if [[ "$LOCAL_MIRROR" == "1" ]]; then
+					sed -i -e "s#http:/#[trusted=yes] file:#g" -e "s#https:/#[trusted=yes] file:#g" /etc/apt/sources.list.d/elastic-7.x.list
+				fi
+				util::update_apt
+				util::install_packages filebeat=${FILEBEAT_VERSION}
+				rm -rf /etc/apt/sources.list.d/elastic-7.x.list > /dev/null 2>&1
+				util::update_apt
 			fi
-			if [[ "$LOCAL_MIRROR" == "1" ]]; then
-				sed -i -e "s#http:/#[trusted=yes] file:#g" -e "s#https:/#[trusted=yes] file:#g" /etc/apt/sources.list.d/elastic-7.x.list
-			fi
-			util::update_apt
-			util::install_packages filebeat=${FILEBEAT_VERSION}
-			rm -rf /etc/apt/sources.list.d/elastic-7.x.list > /dev/null 2>&1
-			util::update_apt
 		fi
 	else
 		util::info "Skip MySQL/Percona installation (NODATASTORE=1)"
@@ -1479,7 +1480,8 @@ Usage:
 Available Commands:
 
 Flag:
-  - rel (focal or jammy or noble)
+  -rel (focal or jammy or noble)
+  -nodatastore (skip MySQL/Percona installation and mysql service handling)
 
 Example:
 
@@ -1574,6 +1576,8 @@ while [ "${1:-}" != "" ]; do
                     ;;
     -netdrv )       shift
                     NETDRV=${1:-$NETDRV}
+                    ;;
+    -nodatastore )  NODATASTORE=1
                     ;;
     * )             help::usage
                     exit -1
