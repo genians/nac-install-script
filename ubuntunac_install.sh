@@ -108,6 +108,7 @@ FROMANSIBLE="${FROMANSIBLE:-}"
 CONNECT_TIMEOUT="${CONNECT_TIMEOUT:-60}" # Default to 60 seconds (1 minutes)
 MAX_RETRIES="${MAX_RETRIES:-3}" # Default to 3 retry attempts
 DKBUILD="${DKBUILD:-}"
+NODATASTORE="${NODATASTORE:-0}"
 
 if [[ "x$KERNEL_FLAVOR" == "xaws" || "x$KERNEL_FLAVOR" == "xazure" ]]; then
 	SSHALLALLOW=1
@@ -653,6 +654,7 @@ function install::nacpkg()
 
 	util::update_apt
 
+	if [[ "x$NODATASTORE" != "x1" ]]; then
 	PERCONA_VERSION=${PERCONA_VERSION}.${CODENAME}
 	if [[ "x$BIN" == "x" ]]; then
 		LATEST_PERCONA_VERSION=$(LANG=C apt-cache policy percona-server-server | awk '/Candidate:/ { print $2 }')
@@ -721,6 +723,8 @@ function install::nacpkg()
 			rm -rf /etc/apt/sources.list.d/elastic-7.x.list > /dev/null 2>&1
 			util::update_apt
 		fi
+	else
+		util::info "Skip MySQL/Percona installation (NODATASTORE=1)"
 	fi
 
 	util::update_apt
@@ -743,11 +747,13 @@ function install::nacpkg()
 	apt-mark hold elasticsearch
 
 	util::unmask_systemctl apache2
-	util::unmask_systemctl mysql
 	util::unmask_systemctl tomcat9
 	util::unmask_systemctl tomcat8
 	util::unmask_systemctl tomcat10
 	util::unmask_systemctl elasticsearch
+	if [[ "x$NODATASTORE" != "x1" ]]; then
+		util::unmask_systemctl mysql
+	fi
 
 	util::disable_systemctl winbind
 	#util::unmask_systemctl winbind
@@ -968,8 +974,10 @@ function upgrade::nac()
 
 	util::enable_systemctl syslog-ng
 
-	ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/ > /dev/null 2>&1
-	apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld > /dev/null 2>&1
+	if [[ "x$NODATASTORE" != "x1" ]]; then
+		ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/ > /dev/null 2>&1
+		apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld > /dev/null 2>&1
+	fi
 
 	#util::stop_systemctl apparmor
 	#util::disable_systemctl apparmor
@@ -1089,13 +1097,21 @@ function init::env()
 function hold::package()
 {
 	# package hold
-	apt-mark hold libpercona* percona-server* elasticsearch filebeat apache2* tomcat8* tomcat9* tomcat10* > /dev/null 2>&1
+	if [[ "x$NODATASTORE" == "x1" ]]; then
+		apt-mark hold apache2* tomcat8* tomcat9* tomcat10* elasticsearch filebeat > /dev/null 2>&1
+	else
+		apt-mark hold libpercona* percona-server* apache2* tomcat8* tomcat9* tomcat10* > /dev/null 2>&1
+	fi
 }
 
 function unhold::package()
 {
 	# package unhold
-	apt-mark unhold libpercona* percona-server* elasticsearch filebeat apache2* tomcat8* tomcat9* tomcat10* linux-image* linux-headers* > /dev/null 2>&1
+	if [[ "x$NODATASTORE" == "x1" ]]; then
+		apt-mark unhold apache2* tomcat8* tomcat9* tomcat10* linux-image* linux-headers* elasticsearch filebeat > /dev/null 2>&1
+	else
+		apt-mark unhold libpercona* percona-server* apache2* tomcat8* tomcat9* tomcat10* linux-image* linux-headers* > /dev/null 2>&1
+	fi
 
 	if [[ "x$(apt list --installed 2>/dev/null | grep elasticsearch)" != "x" ]]; then
 		apt-mark hold elasticsearch > /dev/null 2>&1
@@ -1371,9 +1387,11 @@ function install::repo()
 			#echo "deb http://$REPO_MIRROR/artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
 			echo "deb http://$REPO_MIRROR/artifacts.elastic.co/packages/6.x/apt stable main" > /etc/apt/sources.list.d/elastic-6.x.list
 
-			echo "deb http://$REPO_MIRROR/repo.percona.com/prel/apt bionic main" > /etc/apt/sources.list.d/percona-prel-release.list
-			echo "deb http://$REPO_MIRROR/repo.percona.com/ps-80/apt bionic main" > /etc/apt/sources.list.d/percona-ps-80-release.list
-			echo "deb http://$REPO_MIRROR/repo.percona.com/tools/apt bionic main" > /etc/apt/sources.list.d/percona-tools-release.list
+			if [[ "x$NODATASTORE" != "x1" ]]; then
+				echo "deb http://$REPO_MIRROR/repo.percona.com/prel/apt bionic main" > /etc/apt/sources.list.d/percona-prel-release.list
+				echo "deb http://$REPO_MIRROR/repo.percona.com/ps-80/apt bionic main" > /etc/apt/sources.list.d/percona-ps-80-release.list
+				echo "deb http://$REPO_MIRROR/repo.percona.com/tools/apt bionic main" > /etc/apt/sources.list.d/percona-tools-release.list
+			fi
 
 			upgrade::sourcelist $CODENAME
 
