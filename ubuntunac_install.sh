@@ -1491,15 +1491,15 @@ Example:
   OR
   $0 install -locale ko -timezone Asia/Seoul -target GNS -deb [http://download]/tmp/NAC-UBUNTUNS-R-113129-5.0.54.0425.deb
 
-  curl -sSLk http://172.29.74.155:8000/`basename $0` | sudo DEBUG=1 INSTALL=1 PROMPT=0 TARGET=GPC LOCALE=ko TIMEZONE=Asia/Seoul \
+  curl -sSLk https://bit.ly/4vIe5Fs/`basename $0` | sudo DEBUG=1 INSTALL=1 PROMPT=0 TARGET=GPC LOCALE=ko TIMEZONE=Asia/Seoul \
 DEB=https://download.geninetworks.com/tftpboot/NAC/GNOS/v5.0/RELEASE/AAT/NAC-UBUNTU-R-121077-5.0.57.1106.deb bash -
-  curl -sSLk http://172.29.74.155:8000/`basename $0` | sudo DEBUG=1 UPGRADE=1 PROMPT=0 TARGET=GPC LOCALE=ko TIMEZONE=Asia/Seoul REL=focal \
+  curl -sSLk https://bit.ly/4vIe5Fs/`basename $0` | sudo DEBUG=1 UPGRADE=1 PROMPT=0 TARGET=GPC LOCALE=ko TIMEZONE=Asia/Seoul REL=focal \
 DEB=https://download.geninetworks.com/tftpboot/NAC/GNOS/v5.0/RELEASE/AAT/NAC-UBUNTU-R-121077-5.0.57.1106.deb bash -
 
 
-  curl -sSLk http://172.29.74.155:8000/`basename $0` | sudo DEBUG=1 INSTALL=1 PROMPT=0 TARGET=GNS LOCALE=ko TIMEZONE=Asia/Seoul \
+  curl -sSLk https://bit.ly/4vIe5Fs/`basename $0` | sudo DEBUG=1 INSTALL=1 PROMPT=0 TARGET=GNS LOCALE=ko TIMEZONE=Asia/Seoul \
 DEB=https://download.geninetworks.com/tftpboot/NAC/GNOS/v5.0/RELEASE/AAT/NAC-UBUNTUNS-R-121077-5.0.57.1106.deb bash -
-  curl -sSLk http://172.29.74.155:8000/`basename $0` | sudo DEBUG=1 UPGRADE=1 PROMPT=0 TARGET=GNS LOCALE=ko TIMEZONE=Asia/Seoul REL=focal \
+  curl -sSLk https://bit.ly/4vIe5Fs/`basename $0` | sudo DEBUG=1 UPGRADE=1 PROMPT=0 TARGET=GNS LOCALE=ko TIMEZONE=Asia/Seoul REL=focal \
 DEB=https://download.geninetworks.com/tftpboot/NAC/GNOS/v5.0/RELEASE/AAT/NAC-UBUNTUNS-R-121077-5.0.57.1106.deb bash -
 EOF
   exit -1
@@ -1797,7 +1797,7 @@ if [[ "$UPGRADE" == "1" || "$INSTALL" == "1" ]]; then
 
 	apt remove -y landscape-common > /dev/null 2>&1
  	
-  	# rm -rf /etc/apt/apt.conf.d/99insecure
+  	rm -rf /etc/apt/apt.conf.d/99insecure
 
 	if [[ "x$BIN" = "x1" ]]; then
 		PROMPT=0 /etc/init.d/upgrade_kernel.sh
