@@ -502,6 +502,10 @@ function install::basepkg()
 		httrack lsb-release ca-certificates iw wireless-tools smartmontools e2fsprogs \
 		parted tzdata
 
+	if [[ "x$NODATASTORE" == "x1" ]]; then
+		util::install_packages mysql-client
+	fi
+
 	if [[ "x$CODENAME" == "xnoble" ]]; then
 		util::install_packages util-linux-extra libaio1t64 libtirpc-dev libncurses6 libtinfo6 libpcre3-dev libpcap0.8t64 libjsoncpp25 libldap2 libparted2t64
 	elif [[ "x$CODENAME" == "xjammy" ]]; then
